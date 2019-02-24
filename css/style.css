@@ -1,0 +1,82 @@
+body {
+  height: 100%;
+  background: url("https://s18.postimg.org/5xjazi415/photo_1456051580611_e193e8fb2cc9.jpg") no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+#app {
+  height: 100%;
+}
+.content {
+  background-color: rgba(255,255,255,0.98);
+  border-radius: 12px;
+  height: 80%;
+  margin-top: 50px;
+  padding: 50px;
+}
+li a {
+  cursor: pointer;
+}
+.new-game-form {
+  width: 50%;
+  margin: 0 auto;
+}
+.new-game-form > button {
+  width: 100%;
+}
+.bannerAlert {
+  margin-top: 25px;
+}
+.alert {
+  z-index: 100;
+}
+#shop {
+  transition: 0.1s;
+}
+.shop-item-container {
+  padding: 4px;
+}
+.shop-item-container .shop-item {
+  border-radius: 15px;
+  padding: 12px;
+  background-color: #ccc;
+}
+.shop-item-container .shop-purchase-link {
+  border: 1px solid;
+  padding: 2px;
+  cursor: pointer;
+  float: right;
+  font-size: 14px;
+  color: #008000;
+}
+.inventory-item {
+  background-color: #ccc;
+  border-radius: 12px;
+  padding: 10px;
+}
+.inventory-item > h4 {
+  text-align: center;
+}
+.equipped {
+  background-color: #eee !important;
+  border: 2px solid #008000;
+}
+.healthbar {
+  width: 80%;
+  height: 40px;
+  background-color: #eee;
+  color: #fff;
+  line-height: 40px;
+  margin: auto;
+  transition: width 500ms;
+}
+.battle-damage {
+  position: absolute;
+  z-index: 100;
+  color: #f00;
+  font-size: 64px;
+  font-weight: bold;
+  margin-left: 250px;
+}

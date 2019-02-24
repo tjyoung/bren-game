@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+  <meta charset="UTF-8">
+  <title>Tiny Web RPG v0.4</title>
+  
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css'>
+<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css'>
+
+      <link rel="stylesheet" href="css/style.css">
+
+  
+</head>
+
+<body>
+
+  
+<div class="container" id="app">
+  <div class="navbar navbar-default" id="navbar">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="#">Brendan's'Amazing RPG</a>
+      </div>
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav">
+          <li :class="{active: route == 'home'}"><a @click="goto('home')">Home</a></li>
+          <template v-if="isGameRunning">
+            <li :class="{active: route == 'fight'}"><a @click="goto('fight')">Fight</a></li>
+            <li :class="{active: route == 'shop'}"><a @click="goto('shop')">Shop</a></li>
+            <li :class="{active: route == 'inventory'}"><a @click="goto('inventory')">Inventory</a></li>
+          </template>
+        </ul>
+        <template v-if="isGameRunning">
+          <div class="nav navbar-nav navbar-right">
+            <p class="navbar-text">Cash: {{ cash }}</p>
+          </div>
+        </template>
+        <div class="nav navbar-nav navbar-right">
+          <p class="navbar-text"><strong>{{ playerName }}</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row content">
+    <div class="col-xs-12">
+      <div v-if="route == 'home'">
+        <h1 class="text-center">Brendan's Amazing RPG</h1>
+        <div class="text-center" v-if="!isGameRunning"><span>This is the test game that Brendan and Iain are building for a new browser-based role playing game.</span>
+          <div class="new-game-form">
+            <input class="form-control" v-model="playerName" placeholder="Your Name" v-on:keyup.enter="startGame()"/>
+            <button class="btn btn-default" @click="startGame()">Start Game</button>
+          </div>
+        </div>
+        <div class="text-center" v-else="v-else">
+          <button class="btn btn-default" @click="resetGame()">Reset Game</button>
+        </div>
+      </div>
+      <div v-if="route == 'fight'">
+        <h1>Fight!</h1>
+        <div class="row" v-if="!inBattle">
+          <div class="col-xs-12 text-center">
+            <button class="btn btn-default" v-if="!currentEnemy" @click="findMonster()">Find Monster!</button>
+            <div v-else="v-else">Finding Monster...</div>
+          </div>
+          <div class="col-xs-12">
+            <p>Make sure you've equipped items before going into battle!</p>
+          </div>
+        </div>
+        <div class="row" v-else="v-else">
+          <div class="col-md-6 text-center" id="playerImage"><img :src="playerImage" v-bind:style="{height: '200px'}"/>
+            <h1>{{ playerName }}</h1>
+          </div>
+          <div class="col-md-6 text-center" id="enemyImage"><img :src="currentEnemy.image" v-bind:style="{height: '200px'}"/>
+            <h1>{{currentEnemy.name}}</h1>
+          </div>
+          <div class="col-md-6">
+            <div class="healthbar">
+              <div class="healthbar text-center" :style="{ backgroundColor: 'green', margin: 0, width: (playerHealth / playerMaxHealth)*100 + '%'}">{{ playerHealth }}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="healthbar">
+              <div class="healthbar text-center" :style="{ backgroundColor: 'green', margin: 0, width: (enemyHealth / currentEnemy.hp)*100 + '%'}">{{ enemyHealth }}</div>
+            </div>
+          </div>
+          <div class="col-md-6 text-center">
+            <div style="margin-top: 12px;">
+              <button class="btn btn-default" v-bind:disabled="!isPlayersTurn" @click="battlePlayerAttack(0)">Attack Standard</button>
+              <button class="btn btn-default" v-bind:disabled="!isPlayersTurn" @click="battlePlayerAttack(1)">Attack Special</button>
+              <button class="btn btn-default" @click="battleRun()" v-bind:disabled="!isPlayersTurn">Run!</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="shop" v-if="route == 'shop'">
+        <h1 class="text-center">Shop</h1>
+        <div class="row">
+          <div class="shop-item-container col-xs-12 col-md-3" v-for="(value, key, i) in shop">
+            <div class="shop-item text-center"><img :src="value.image" height="120"/>
+              <h3>{{ value.name }}
+                <div class="shop-purchase-link"><span @click="purchase(key)" v-if="inventory[key] == null">Buy</span><span v-else="v-else">Owned</span></div>
+              </h3>
+              <div v-for="(val, k) in value">
+                <div v-if="k != 'image' &amp;&amp; k != 'name' &amp;&amp; k != 'type'">{{ k }} - {{ val }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-if="route == 'map'">
+        <h1>Map!</h1>
+      </div>
+      <div v-if="route == 'inventory'">
+        <div class="row">
+          <div class="col-xs-12"> 
+            <h2 class="text-center">Equipped</h2>
+          </div>
+          <div class="col-xs-6" v-if="this.weapon"> 
+            <h4 class="text-center">Weapon </h4>
+            <div class="text-center">
+              <h4>{{ this.weapon.name }}</h4><img :src="this.weapon.image" height="120"/>
+            </div>
+          </div>
+          <div class="col-xs-6" v-if="this.armor"> 
+            <h4>Armor</h4>
+            <div class="text-center">
+              <h4 class="text-center">{{ this.armor.name }}</h4><img :src="this.armor.image" height="120"/>
+            </div>
+          </div>
+          <div class="col-xs-12" v-if="!this.weapon &amp;&amp; !this.armor">
+            <h4 class="text-center">You have nothing equipped</h4>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-12">
+            <h2 class="text-center">Inventory</h2>
+          </div>
+          <div class="col-xs-6 col-md-3 inventory-item-cont" v-for="(value, key, i) in inventory">
+            <div class="inventory-item" :class="{ equipped: weapon==value || armor==value }">
+              <h4>{{ value.name }}</h4>
+              <div v-for="(v, k) in value"><span v-if="k != 'cost' &amp;&amp; k != 'image' &amp;&amp; k != 'name'">{{k}} {{v}}</span></div>
+              <button @click="equip(value)" v-if="weapon != value &amp;&amp; armor != value" style="float: left;">Equip</button>
+              <button @click="sell(key)" style="float: right;">Sell for {{ Math.round(value.cost * .75) }}</button>
+              <p>&nbsp;</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-xs-12 text-center" v-if="Object.keys(inventory).length === 0">
+          <h4>You don't own any items!</h4><a @click.prevent="goto('shop')" v-bind:style="{cursor: 'pointer'}">Go to the shop to buy something!</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row animated zoomIn bannerAlert" v-if="alert">
+    <div class="alert alert-warning text-center" role="alert"><strong>{{ alert }}</strong></div>
+  </div>
+</div>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/vue/2.0.7/vue.js'></script>
+
+  
+
+    <script  src="js/index.js"></script>
+
+
+
+
+</body>
+
+</html>

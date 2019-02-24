@@ -1,0 +1,107 @@
+body {
+	height 100%
+	background url('https://s18.postimg.org/5xjazi415/photo_1456051580611_e193e8fb2cc9.jpg') no-repeat center center fixed
+  -webkit-background-size cover
+  -moz-background-size cover
+  -o-background-size cover
+  background-size cover
+}
+
+#app {
+	height 100%
+	
+}
+
+.content {
+	background-color rgba(255,255,255, 0.98)
+	border-radius 12px
+	height 80%
+	margin-top 50px
+	padding 50px
+}
+
+li {
+	a {
+		cursor pointer
+	}
+}
+
+.new-game-form {
+	width 50%
+	margin 0 auto
+	
+ > button {
+	 width 100%
+ }
+	
+}
+
+.bannerAlert {
+	margin-top 25px
+}
+
+.alert {
+	z-index 100
+}
+
+// Shop
+
+#shop {
+	transition 0.1s
+}
+
+.shop-item-container {
+	padding 4px
+	
+	.shop-item {
+		border-radius 15px
+	 	padding 12px
+	 	background-color #CCC
+ 	}
+ 
+ .shop-purchase-link {
+	 border 1px solid
+	 padding 2px
+	 cursor pointer
+	 float right
+	 font-size 14px
+	 color green
+ }
+}
+
+// Inventory
+
+.inventory-item {
+	background-color #CCC
+	border-radius 12px
+	padding 10px
+ > h4 {
+	 text-align center
+ }
+}
+
+.equipped {
+	background-color: #EEE!important
+	border 2px solid green
+}
+
+// Battle
+
+.healthbar {
+	width 80%;
+	height 40px;
+	background-color #eee
+	color white
+	line-height 40px
+	margin auto;
+	transition width 500ms;
+}
+
+.battle-damage {
+	position absolute
+	z-index 100
+	color red
+	font-size 64px
+	font-weight bold
+	margin-left 250px
+}

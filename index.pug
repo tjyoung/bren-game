@@ -1,0 +1,145 @@
+#app.container
+
+	//- NAVBAR ------ 
+	#navbar.navbar.navbar-default
+		.container-fluid
+		
+			.navbar-header
+				button.navbar-toggle.collapsed(type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false")
+					span.sr-only Toggle navigation
+					span.icon-bar
+					span.icon-bar
+					span.icon-bar
+				a.navbar-brand(href="#") TW RPG
+				
+			.collapse.navbar-collapse#bs-example-navbar-collapse-1
+				ul.nav.navbar-nav
+					li(:class="{active: route == 'home'}"): a(@click="goto('home')") Home
+					
+					//- Only show navigation if game is active
+					template(v-if="isGameRunning")
+						li(:class="{active: route == 'fight'}"): a(@click="goto('fight')") Fight
+						li(:class="{active: route == 'shop'}"): a(@click="goto('shop')") Shop
+						li(:class="{active: route == 'inventory'}"): a(@click="goto('inventory')") Inventory
+						//- li(:class="{active: route == 'map'}"): a(@click="goto('map')") Map
+						
+				//- Again only show if game is active - for right nav items
+				template(v-if="isGameRunning")
+					div.nav.navbar-nav.navbar-right
+						p.navbar-text Cash: {{ cash }}
+				div.nav.navbar-nav.navbar-right
+					p.navbar-text: strong {{ playerName }}
+	
+	//- Start Routes -------
+	
+	.row.content
+		.col-xs-12
+		
+			//- --------------
+			//- Home Route ------
+		
+			div(v-if="route == 'home'")
+				h1.text-center Tiny Web RPG
+				div.text-center(v-if="!isGameRunning")
+					span This is the WIP of a new browser-based role playing game.
+					div.new-game-form
+						input.form-control(v-model="playerName" placeholder="Your Name" v-on:keyup.enter="startGame()")
+						button.btn.btn-default(@click="startGame()") Start Game
+				div.text-center(v-else)
+					button.btn.btn-default(@click="resetGame()") Reset Game
+			
+			//- --------------
+			//- Battle Route
+
+			div(v-if="route == 'fight'")
+				h1 Fight!
+				
+				
+				div.row(v-if="!inBattle")
+					//- If not in battle
+					div.col-xs-12.text-center
+						button.btn.btn-default(v-if="!currentEnemy" @click="findMonster()") Find Monster!
+						div(v-else) Finding Monster...
+					div.col-xs-12
+						p Make sure you've equipped items before going into battle!
+				div.row(v-else)
+					//- If in battle
+					div.col-md-6.text-center#playerImage
+						img(:src="playerImage" v-bind:style="{height: '200px'}")
+						h1 {{ playerName }}
+					div.col-md-6.text-center#enemyImage
+						img(:src="currentEnemy.image" v-bind:style="{height: '200px'}")
+						h1 {{currentEnemy.name}}
+					div.col-md-6
+						div.healthbar
+							div.healthbar.text-center(:style="{ backgroundColor: 'green', margin: 0, width: (playerHealth / playerMaxHealth)*100 + '%'}") {{ playerHealth }}
+					div.col-md-6
+						div.healthbar
+							div.healthbar.text-center(:style="{ backgroundColor: 'green', margin: 0, width: (enemyHealth / currentEnemy.hp)*100 + '%'}") {{ enemyHealth }}
+					div.col-md-6.text-center
+						div(style="margin-top: 12px")
+							button.btn.btn-default(v-bind:disabled="!isPlayersTurn" @click="battlePlayerAttack(0)") Attack Standard
+							button.btn.btn-default(v-bind:disabled="!isPlayersTurn" @click="battlePlayerAttack(1)") Attack Special
+							button.btn.btn-default(@click="battleRun()" v-bind:disabled="!isPlayersTurn") Run!
+			
+			//- --------------
+			//- Shop Route
+			
+			div#shop(v-if="route == 'shop'")
+				h1.text-center Shop
+				.row
+					.shop-item-container.col-xs-12.col-md-3(v-for="(value, key, i) in shop")
+						.shop-item.text-center
+							img(:src="value.image" height="120")
+							h3 {{ value.name }}
+								div.shop-purchase-link
+									span(@click="purchase(key)" v-if="inventory[key] == null") Buy
+									span(v-else) Owned
+							div(v-for="(val, k) in value")
+								div(v-if="k != 'image' && k != 'name' && k != 'type'") {{ k }} - {{ val }}
+			
+			//- --------------
+			//- Map Route
+			
+			div(v-if="route == 'map'")
+				h1 Map!
+			
+			//- --------------
+			//- Inventory Route
+			
+			div(v-if="route == 'inventory'")
+				.row
+					.col-xs-12 
+						h2.text-center Equipped
+					.col-xs-6(v-if="this.weapon") 
+						h4.text-center Weapon 
+						div.text-center
+							h4 {{ this.weapon.name }}
+							img(:src="this.weapon.image" height="120")
+					.col-xs-6(v-if="this.armor") 
+						h4 Armor
+						div.text-center
+							h4.text-center {{ this.armor.name }}
+							img(:src="this.armor.image" height="120")
+					.col-xs-12(v-if="!this.weapon && !this.armor")
+						h4.text-center You have nothing equipped
+				.row
+					.col-xs-12
+						h2.text-center Inventory
+					.col-xs-6.col-md-3.inventory-item-cont(v-for="(value, key, i) in inventory")
+						div.inventory-item(:class="{ equipped: weapon==value || armor==value }")
+							h4 {{ value.name }}
+							div(v-for="(v, k) in value")
+								span(v-if="k != 'cost' && k != 'image' && k != 'name'") {{k}} {{v}}
+							button(@click="equip(value)" v-if="weapon != value && armor != value" style="float: left") Equip
+							button(@click="sell(key)" style="float: right") Sell for {{ Math.round(value.cost * .75) }}
+							p &nbsp;
+				.col-xs-12.text-center(v-if="Object.keys(inventory).length === 0")
+					h4 You don't own any items!
+					a(@click.prevent="goto('shop')" v-bind:style="{cursor: 'pointer'}") Go to the shop to buy something!
+
+	//- ALERTS! -----
+	
+	.row(v-if="alert" class="animated zoomIn bannerAlert")
+		div(class="alert alert-warning text-center" role="alert")
+			strong {{ alert }}
